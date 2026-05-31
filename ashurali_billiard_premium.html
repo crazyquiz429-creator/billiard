@@ -1,0 +1,1143 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ashurali Billiard</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Rajdhani:wght@400;500;600;700&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+
+:root{
+  --gold:#d4a843;
+  --gold2:#f0c84a;
+  --gold3:#8a6820;
+  --green:#00e676;
+  --green2:#00b050;
+  --red:#ff3d3d;
+  --orange:#ff8c00;
+  --bg:#050709;
+  --bg2:#080c10;
+  --surface:#0c1218;
+  --surface2:#111a24;
+  --border:#172030;
+  --border2:#1e2d40;
+  --text:#ccd8e4;
+  --text2:#6a8aaa;
+  --felt:#0a1f0f;
+  --felt2:#0d2812;
+  --ball-red:#cc2200;
+  --ball-yellow:#e8c300;
+  --ball-blue:#0044cc;
+  --f-display:'Bebas Neue',sans-serif;
+  --f-ui:'Rajdhani',sans-serif;
+  --f-mono:'Share Tech Mono',monospace;
+}
+
+html,body{height:100%;overflow-x:hidden}
+
+body{
+  background:var(--bg);
+  color:var(--text);
+  font-family:var(--f-ui);
+  min-height:100vh;
+  background-image:
+    radial-gradient(ellipse 100% 60% at 50% -5%, rgba(212,168,67,0.06) 0%, transparent 55%),
+    radial-gradient(ellipse 50% 50% at 0% 80%, rgba(0,230,118,0.03) 0%, transparent 50%),
+    radial-gradient(ellipse 40% 40% at 100% 20%, rgba(0,68,204,0.04) 0%, transparent 50%);
+}
+
+/* ═══ NOISE GRAIN OVERLAY ═══ */
+body::before{
+  content:'';
+  position:fixed;inset:0;
+  background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E");
+  pointer-events:none;z-index:0;opacity:0.4;
+}
+
+/* ═══ BILLIARD TABLE FELT STRIPE ═══ */
+.felt-stripe{
+  height:3px;
+  background:linear-gradient(90deg, transparent, var(--green2), var(--green), var(--green2), transparent);
+  opacity:0.6;
+}
+
+/* ═══ HEADER ═══ */
+.header{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  padding:14px 32px;
+  background:rgba(5,7,9,0.96);
+  border-bottom:1px solid var(--border);
+  position:sticky;top:0;z-index:200;
+  backdrop-filter:blur(20px);
+}
+.logo{display:flex;align-items:center;gap:16px}
+.logo-emblem{
+  width:48px;height:48px;
+  background:radial-gradient(circle at 40% 35%, #1e3a1e, #0a1f0f);
+  border:1px solid var(--gold3);
+  border-radius:50%;
+  display:flex;align-items:center;justify-content:center;
+  font-size:22px;
+  box-shadow:0 0 20px rgba(212,168,67,0.25), inset 0 1px 0 rgba(212,168,67,0.1);
+  position:relative;overflow:hidden;
+}
+.logo-emblem::after{
+  content:'';position:absolute;
+  top:-50%;left:-50%;width:200%;height:200%;
+  background:conic-gradient(transparent 0deg,rgba(212,168,67,0.06) 90deg,transparent 180deg,rgba(212,168,67,0.06) 270deg,transparent 360deg);
+  animation:spin 8s linear infinite;
+}
+@keyframes spin{to{transform:rotate(360deg)}}
+.logo-text{line-height:1.1}
+.logo-text h1{
+  font-family:var(--f-display);
+  font-size:26px;
+  letter-spacing:4px;
+  color:var(--gold);
+  text-shadow:0 0 30px rgba(212,168,67,0.4);
+}
+.logo-text span{
+  font-size:9px;color:var(--text2);
+  letter-spacing:5px;text-transform:uppercase;
+}
+.header-actions{display:flex;gap:8px;align-items:center}
+
+/* ═══ BUTTONS ═══ */
+.btn{
+  padding:7px 18px;border-radius:4px;
+  font-size:11px;font-weight:700;cursor:pointer;
+  font-family:var(--f-display);letter-spacing:2px;
+  text-transform:uppercase;transition:all 0.15s;border:none;
+}
+.btn:active{transform:scale(0.96)}
+.btn-ghost{background:transparent;border:1px solid var(--border2);color:var(--text2)}
+.btn-ghost:hover{border-color:var(--gold3);color:var(--gold)}
+.btn-gold{background:linear-gradient(135deg,var(--gold),var(--gold3));color:#000;font-weight:700}
+.btn-gold:hover{background:linear-gradient(135deg,var(--gold2),var(--gold))}
+.btn-red{background:transparent;border:1px solid rgba(255,61,61,0.35);color:var(--red)}
+.btn-red:hover{background:rgba(255,61,61,0.08)}
+.btn-green{background:linear-gradient(135deg,var(--green2),#007a30);color:#000;font-weight:700}
+.btn-green:hover{filter:brightness(1.15)}
+.btn-amber{background:transparent;border:1px solid rgba(212,168,67,0.35);color:var(--gold)}
+.btn-amber:hover{background:rgba(212,168,67,0.08)}
+
+/* ═══ QUICK SETTINGS BAR ═══ */
+.qbar{
+  display:flex;align-items:center;gap:28px;
+  padding:9px 32px;
+  background:var(--surface);
+  border-bottom:1px solid var(--border);
+  flex-wrap:wrap;
+}
+.qbar-group{display:flex;align-items:center;gap:8px}
+.qbar label{font-size:10px;color:var(--text2);text-transform:uppercase;letter-spacing:2px}
+.qbar input[type=number]{
+  background:#050c12;border:1px solid var(--border2);
+  color:var(--text);padding:5px 10px;border-radius:4px;
+  font-size:13px;font-family:var(--f-mono);width:95px;outline:none;
+}
+.qbar input:focus{border-color:var(--gold)}
+.qbar-unit{font-size:10px;color:var(--text2);letter-spacing:1px}
+
+/* ═══ STATS BAR ═══ */
+.statsbar{
+  display:grid;grid-template-columns:repeat(4,1fr);
+  border-bottom:1px solid var(--border);
+  background:var(--bg2);
+}
+.stat{padding:11px 22px;border-right:1px solid var(--border);text-align:center}
+.stat:last-child{border-right:none}
+.stat-lbl{font-size:9px;color:var(--text2);text-transform:uppercase;letter-spacing:2.5px;margin-bottom:3px}
+.stat-val{font-family:var(--f-mono);font-size:18px;color:var(--gold);font-weight:700}
+@media(max-width:700px){.statsbar{grid-template-columns:repeat(2,1fr)}}
+
+/* ═══ GRID ═══ */
+.grid{
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  gap:20px;padding:22px 26px;
+  max-width:1900px;margin:0 auto;
+}
+@media(max-width:1150px){.grid{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:720px){.grid{grid-template-columns:1fr;padding:14px}}
+
+/* ═══ CARD — BILLIARD TABLE FEEL ═══ */
+.card{
+  background:var(--surface);
+  border:1px solid var(--border);
+  border-radius:8px;
+  overflow:hidden;
+  transition:border-color 0.3s, box-shadow 0.3s;
+  position:relative;
+}
+.card::before{
+  content:'';position:absolute;inset:0;
+  background:linear-gradient(135deg,rgba(255,255,255,0.015) 0%,transparent 50%);
+  pointer-events:none;border-radius:8px;
+}
+.card.running{
+  border-color:var(--green2);
+  box-shadow:0 0 0 1px rgba(0,230,118,0.1), 0 0 32px rgba(0,230,118,0.06);
+}
+.card.overtime{
+  border-color:var(--orange);
+  box-shadow:0 0 0 1px rgba(255,140,0,0.15), 0 0 32px rgba(255,140,0,0.08);
+  animation:overtime-glow 2s ease-in-out infinite;
+}
+@keyframes overtime-glow{
+  0%,100%{box-shadow:0 0 0 1px rgba(255,140,0,0.15), 0 0 32px rgba(255,140,0,0.08)}
+  50%{box-shadow:0 0 0 1px rgba(255,140,0,0.3), 0 0 48px rgba(255,140,0,0.15)}
+}
+
+/* ═══ PULSING DOT ═══ */
+.pulse{position:absolute;top:13px;right:13px;width:7px;height:7px;border-radius:50%;background:var(--border2)}
+.running .pulse{background:var(--green);animation:pdot 1.5s ease-in-out infinite}
+.overtime .pulse{background:var(--orange);animation:pdot 0.7s ease-in-out infinite}
+@keyframes pdot{0%,100%{opacity:1;transform:scale(1);box-shadow:0 0 0 0 currentColor}50%{opacity:0.4;transform:scale(1.6);box-shadow:0 0 0 4px transparent}}
+
+/* ═══ CARD HEADER ═══ */
+.card-head{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:11px 16px 9px;
+  border-bottom:1px solid var(--border);
+  background:rgba(0,0,0,0.3);
+}
+.table-name{
+  font-family:var(--f-display);
+  font-size:15px;letter-spacing:4px;
+  color:var(--gold);text-transform:uppercase;
+  cursor:pointer;
+}
+.table-name:hover{color:var(--gold2)}
+.status-pill{
+  font-size:8px;letter-spacing:2px;text-transform:uppercase;
+  padding:2px 10px;border-radius:2px;font-weight:700;
+  font-family:var(--f-display);
+  background:rgba(255,255,255,0.04);color:var(--text2);
+  border:1px solid var(--border2);
+}
+.running .status-pill{background:rgba(0,230,118,0.1);color:var(--green);border-color:rgba(0,230,118,0.25)}
+.overtime .status-pill{background:rgba(255,140,0,0.1);color:var(--orange);border-color:rgba(255,140,0,0.25)}
+
+/* ═══ TIME DISPLAY ═══ */
+.time-area{
+  padding:16px 18px 8px;
+  display:flex;align-items:center;justify-content:space-between;
+  background:linear-gradient(180deg,rgba(0,0,0,0.2),transparent);
+}
+.time-num{
+  font-family:var(--f-mono);
+  font-size:48px;font-weight:400;
+  color:var(--text);line-height:1;
+  letter-spacing:3px;transition:color 0.3s;
+}
+.running .time-num,.overtime .time-num{color:var(--green)}
+.overtime .time-num{color:var(--orange)}
+.time-meta{
+  font-size:9px;color:var(--text2);
+  letter-spacing:2px;text-transform:uppercase;margin-top:4px;
+}
+
+/* Countdown display */
+.countdown-display{
+  text-align:right;
+}
+.countdown-lbl{font-size:8px;color:var(--text2);letter-spacing:2px;text-transform:uppercase;margin-bottom:2px}
+.countdown-val{
+  font-family:var(--f-mono);font-size:22px;
+  color:var(--text2);transition:color 0.3s;
+}
+.countdown-val.warn{color:var(--orange);animation:blink-warn 1s ease-in-out infinite}
+.countdown-val.over{color:var(--red);animation:blink-warn 0.5s ease-in-out infinite}
+@keyframes blink-warn{0%,100%{opacity:1}50%{opacity:0.4}}
+
+/* ═══ PROGRESS / LIMIT BAR ═══ */
+.prog-wrap{height:3px;background:var(--border);margin:0}
+.prog-fill{height:100%;background:var(--green);transition:width 0.8s linear;max-width:100%}
+.prog-fill.warn{background:var(--orange)}
+.prog-fill.over{background:var(--red)}
+
+/* ═══ PRICE ROW ═══ */
+.price-row{
+  display:flex;align-items:flex-end;justify-content:space-between;
+  padding:8px 18px 10px;
+}
+.price-detail{font-size:10px;color:var(--text2);text-transform:uppercase;letter-spacing:1.5px;line-height:1.6}
+.price-detail span{color:var(--text);font-family:var(--f-mono);font-size:12px}
+.price-total-lbl{font-size:8px;color:var(--text2);letter-spacing:3px;text-transform:uppercase;margin-bottom:1px;text-align:right}
+.price-total{font-family:var(--f-mono);font-size:20px;font-weight:400;color:var(--gold);text-align:right}
+.overtime .price-total{color:var(--orange)}
+
+/* ═══ CONTROLS ═══ */
+.controls{display:flex;gap:7px;padding:0 14px 13px}
+.btn-start{
+  flex:1;height:40px;border-radius:4px;
+  font-size:14px;font-weight:700;
+  font-family:var(--f-display);letter-spacing:3px;
+  text-transform:uppercase;cursor:pointer;border:none;
+  background:linear-gradient(135deg,var(--green2),#006028);
+  color:#000;transition:all 0.15s;
+}
+.btn-start:hover{filter:brightness(1.15)}
+.btn-start.active{
+  background:linear-gradient(135deg,#cc1010,#7a0808);
+  color:#fff;
+}
+.btn-start:active{transform:scale(0.97)}
+.btn-icon{
+  width:40px;height:40px;border-radius:4px;
+  border:1px solid var(--border2);background:transparent;
+  color:var(--text2);cursor:pointer;font-size:15px;
+  display:flex;align-items:center;justify-content:center;
+  transition:all 0.15s;
+}
+.btn-icon:hover{border-color:var(--text2);color:var(--text)}
+.btn-icon:active{transform:scale(0.95)}
+
+/* ═══ TIME LIMIT ROW ═══ */
+.limit-row{
+  display:flex;align-items:center;gap:8px;
+  padding:0 14px 10px;
+}
+.limit-row label{font-size:9px;color:var(--text2);text-transform:uppercase;letter-spacing:2px;white-space:nowrap}
+.limit-input{
+  width:70px;background:#06080c;
+  border:1px solid var(--border2);color:var(--text);
+  padding:4px 8px;border-radius:4px;font-size:12px;
+  font-family:var(--f-mono);outline:none;
+}
+.limit-input:focus{border-color:var(--gold)}
+.limit-unit{font-size:9px;color:var(--text2);letter-spacing:1px}
+.limit-active-badge{
+  font-size:8px;font-family:var(--f-display);letter-spacing:1.5px;
+  padding:2px 8px;border-radius:2px;
+  background:rgba(255,140,0,0.1);color:var(--orange);
+  border:1px solid rgba(255,140,0,0.3);
+}
+
+/* ═══ BALL DECORATIONS ON CARD ═══ */
+.balls-deco{
+  display:flex;gap:4px;
+  padding:0 16px 0;
+  align-items:center;
+}
+.ball{
+  width:14px;height:14px;border-radius:50%;
+  display:flex;align-items:center;justify-content:center;
+  font-size:6px;font-weight:700;color:rgba(255,255,255,0.8);
+  box-shadow:inset -2px -2px 4px rgba(0,0,0,0.4),inset 1px 1px 2px rgba(255,255,255,0.2);
+}
+.ball-1{background:radial-gradient(circle at 35% 30%,#f5c800,#c89800)}
+.ball-2{background:radial-gradient(circle at 35% 30%,#3366ff,#1133cc)}
+.ball-3{background:radial-gradient(circle at 35% 30%,#cc2200,#881100)}
+.ball-4{background:radial-gradient(circle at 35% 30%,#882299,#551166)}
+.ball-5{background:radial-gradient(circle at 35% 30%,#ff6600,#cc4400)}
+.ball-8{background:radial-gradient(circle at 35% 30%,#222,#111)}
+
+/* ═══ DIVIDER ═══ */
+.sep{height:1px;background:var(--border);margin:0}
+
+/* ═══ EXTRAS ═══ */
+.extras-section{border-top:1px solid var(--border);padding:8px 14px 10px}
+.extras-head{display:flex;align-items:center;justify-content:space-between;cursor:pointer;user-select:none;margin-bottom:5px}
+.extras-title{font-size:9px;color:var(--text2);text-transform:uppercase;letter-spacing:2px;display:flex;align-items:center;gap:5px}
+.extras-total{font-family:var(--f-mono);font-size:11px;color:var(--gold)}
+.extras-body{display:none}
+.extras-body.open{display:block}
+.product-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:5px;margin-bottom:8px}
+.product-btn{
+  background:#0a1018;border:1px solid var(--border2);
+  border-radius:4px;padding:6px 8px;cursor:pointer;
+  display:flex;align-items:center;justify-content:space-between;
+  gap:5px;transition:all 0.12s;color:var(--text);
+}
+.product-btn:hover{border-color:var(--gold3);background:#0f1820}
+.product-btn:active{transform:scale(0.97)}
+.product-name{font-size:10px;color:var(--text);line-height:1.3;text-align:left;font-family:var(--f-ui)}
+.product-price{font-family:var(--f-mono);font-size:10px;color:var(--gold);white-space:nowrap}
+.extras-list{margin-top:5px}
+.extra-item{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:3px 0;border-bottom:1px solid rgba(23,32,48,0.6);
+  font-size:11px;font-family:var(--f-mono);
+}
+.extra-item:last-child{border-bottom:none}
+.extra-name{color:var(--text2);flex:1}
+.extra-qty{display:flex;align-items:center;gap:3px;margin:0 7px}
+.qty-btn{
+  width:18px;height:18px;background:#111c28;
+  border:1px solid var(--border2);border-radius:2px;
+  color:var(--text);cursor:pointer;font-size:12px;
+  display:flex;align-items:center;justify-content:center;padding:0;
+}
+.qty-btn:hover{border-color:var(--gold3);color:var(--gold)}
+.qty-num{font-size:11px;min-width:14px;text-align:center;color:var(--text)}
+.extra-sum{color:var(--gold);min-width:75px;text-align:right}
+.extra-del{background:none;border:none;color:var(--red);cursor:pointer;font-size:12px;padding:0 0 0 5px;opacity:0.45}
+.extra-del:hover{opacity:1}
+.custom-extra{display:flex;gap:5px;margin-top:7px;align-items:center}
+.custom-extra input{
+  background:#060a10;border:1px solid var(--border2);color:var(--text);
+  padding:4px 7px;border-radius:4px;font-size:11px;outline:none;
+}
+.custom-extra input:focus{border-color:var(--gold)}
+.custom-extra input.name-in{flex:1;min-width:0}
+.custom-extra input.price-in{width:75px}
+.btn-add-custom{
+  padding:4px 9px;background:rgba(212,168,67,0.08);
+  border:1px solid rgba(212,168,67,0.3);color:var(--gold);
+  border-radius:4px;cursor:pointer;font-size:11px;white-space:nowrap;
+}
+.btn-add-custom:hover{background:rgba(212,168,67,0.15)}
+
+/* ═══ HISTORY ═══ */
+.history-section{border-top:1px solid var(--border);padding:8px 14px 12px}
+.history-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:5px}
+.history-title{font-size:9px;color:var(--text2);text-transform:uppercase;letter-spacing:2.5px}
+.btn-clear-hist{font-size:9px;color:var(--red);background:none;border:none;cursor:pointer;opacity:0.5;padding:0;letter-spacing:1px;text-transform:uppercase}
+.btn-clear-hist:hover{opacity:1}
+.hist-table{width:100%;border-collapse:collapse;font-size:11px;font-family:var(--f-mono)}
+.hist-table th{color:var(--text2);font-weight:400;text-align:left;padding:3px 5px;border-bottom:1px solid var(--border);letter-spacing:1px;text-transform:uppercase;font-size:9px}
+.hist-table td{padding:4px 5px;border-bottom:1px solid rgba(23,32,48,0.5);color:var(--text)}
+.hist-table td.sum{color:var(--gold)}
+.hist-table tr:last-child td{border-bottom:none}
+.no-hist{text-align:center;color:var(--text2);font-size:10px;padding:6px 0;letter-spacing:1px}
+
+/* ═══ ADD CARD ═══ */
+.add-card{
+  background:transparent;border:1px dashed var(--border2);
+  border-radius:8px;display:flex;flex-direction:column;
+  align-items:center;justify-content:center;gap:10px;
+  cursor:pointer;min-height:180px;color:var(--text2);
+  transition:all 0.2s;
+}
+.add-card:hover{border-color:var(--gold3);color:var(--gold)}
+.add-card span{font-size:28px;line-height:1}
+.add-card p{font-size:11px;letter-spacing:3px;text-transform:uppercase;font-family:var(--f-display)}
+
+/* ═══ ADMIN LOCK SCREEN ═══ */
+.admin-lock{
+  position:fixed;inset:0;z-index:9999;
+  background:#040609;
+  display:flex;align-items:center;justify-content:center;
+  background-image:
+    radial-gradient(ellipse 60% 60% at 50% 50%, rgba(0,115,40,0.06) 0%, transparent 65%),
+    radial-gradient(ellipse 40% 40% at 50% 50%, rgba(212,168,67,0.04) 0%, transparent 50%);
+}
+.admin-box{
+  width:400px;max-width:94vw;
+  background:var(--surface);
+  border:1px solid var(--gold3);
+  border-radius:6px;
+  padding:40px;
+  box-shadow:0 0 80px rgba(212,168,67,0.1), 0 0 0 1px rgba(212,168,67,0.04);
+  text-align:center;
+}
+.admin-balls{display:flex;justify-content:center;gap:8px;margin-bottom:20px}
+.admin-ball{
+  width:20px;height:20px;border-radius:50%;
+  box-shadow:inset -3px -3px 5px rgba(0,0,0,0.5),inset 1px 1px 3px rgba(255,255,255,0.2);
+}
+.admin-box h2{
+  font-family:var(--f-display);font-size:30px;
+  color:var(--gold);letter-spacing:5px;
+  margin-bottom:4px;
+  text-shadow:0 0 30px rgba(212,168,67,0.3);
+}
+.admin-box p{color:var(--text2);margin-bottom:24px;font-size:12px;letter-spacing:2px;text-transform:uppercase}
+.admin-box input{
+  width:100%;background:#060a0d;
+  border:1px solid var(--border2);color:var(--text);
+  padding:13px;border-radius:4px;font-size:22px;
+  font-family:var(--f-mono);margin-bottom:14px;
+  outline:none;text-align:center;letter-spacing:8px;
+}
+.admin-box input:focus{border-color:var(--gold)}
+.admin-error{color:var(--red);font-size:11px;margin-top:8px;display:none;letter-spacing:1px}
+
+/* ═══ MODALS ═══ */
+.modal-overlay{
+  display:none;position:fixed;inset:0;
+  background:rgba(0,0,0,0.92);z-index:500;
+  align-items:center;justify-content:center;
+}
+.modal-overlay.open{display:flex}
+.modal{
+  background:var(--surface);border:1px solid var(--border2);
+  border-radius:6px;padding:28px;width:440px;
+  max-width:96vw;max-height:92vh;overflow-y:auto;
+}
+.modal h2{
+  font-family:var(--f-display);font-size:20px;
+  color:var(--gold);letter-spacing:3px;
+  text-transform:uppercase;margin-bottom:18px;
+}
+.modal label{display:block;font-size:10px;color:var(--text2);
+  text-transform:uppercase;letter-spacing:1.5px;margin-bottom:5px}
+.modal input{
+  width:100%;background:#060c12;border:1px solid var(--border2);
+  color:var(--text);padding:9px 12px;border-radius:4px;
+  font-size:14px;font-family:var(--f-mono);margin-bottom:14px;outline:none;
+}
+.modal input:focus{border-color:var(--gold)}
+.modal-footer{display:flex;gap:10px;justify-content:flex-end;margin-top:4px}
+.export-list{
+  max-height:360px;overflow-y:auto;border:1px solid var(--border);
+  border-radius:4px;padding:10px;font-family:var(--f-mono);
+  font-size:11px;background:#04080b;line-height:2;
+}
+.catalog-editor{margin-top:12px;border-top:1px solid var(--border);padding-top:12px}
+.catalog-item{display:flex;gap:6px;margin-bottom:7px}
+.catalog-item input{margin-bottom:0}
+.catalog-item .emoji{width:55px}
+.catalog-item .name{flex:1}
+.catalog-item .price{width:95px}
+
+/* ═══ OVERTIME ALERT BANNER ═══ */
+.overtime-alert{
+  display:none;
+  background:linear-gradient(135deg,rgba(255,140,0,0.12),rgba(255,60,0,0.08));
+  border-top:1px solid rgba(255,140,0,0.25);
+  padding:5px 14px;font-size:10px;
+  color:var(--orange);letter-spacing:2px;text-transform:uppercase;
+  font-family:var(--f-display);text-align:center;
+  animation:oa-fade 2s ease-in-out infinite;
+}
+.overtime-alert.show{display:block}
+@keyframes oa-fade{0%,100%{opacity:1}50%{opacity:0.5}}
+
+/* ═══ SECTION DIVIDER ═══ */
+.section-sep{
+  height:1px;
+  background:linear-gradient(90deg,transparent,var(--gold3),transparent);
+  opacity:0.3;
+}
+</style>
+</head>
+<body>
+
+<!-- ADMIN LOCK -->
+<div class="admin-lock" id="adminLock">
+  <div class="admin-box">
+    <div class="admin-balls">
+      <div class="admin-ball" style="background:radial-gradient(circle at 35% 30%,#f5c800,#c89800)"></div>
+      <div class="admin-ball" style="background:radial-gradient(circle at 35% 30%,#3366ff,#1133cc)"></div>
+      <div class="admin-ball" style="background:radial-gradient(circle at 35% 30%,#cc2200,#881100)"></div>
+      <div class="admin-ball" style="background:radial-gradient(circle at 35% 30%,#222,#111)"></div>
+      <div class="admin-ball" style="background:radial-gradient(circle at 35% 30%,#882299,#551166)"></div>
+    </div>
+    <h2>ASHURALI</h2>
+    <p>Billiard Management · Admin</p>
+    <input type="password" id="adminCodeInput" placeholder="••••••" maxlength="8" autofocus>
+    <button class="btn btn-gold" style="width:100%;padding:13px;font-size:14px;letter-spacing:3px" onclick="checkAdminCode()">KIRISH</button>
+    <div class="admin-error" id="adminError">⚠ Parol noto'g'ri</div>
+  </div>
+</div>
+
+<div class="felt-stripe"></div>
+
+<!-- HEADER -->
+<header class="header">
+  <div class="logo">
+    <div class="logo-emblem">🎱</div>
+    <div class="logo-text">
+      <h1>ASHURALI</h1>
+      <span>Billiard · Management System</span>
+    </div>
+  </div>
+  <div class="header-actions">
+    <button class="btn btn-ghost" onclick="openExport()">📊 Hisobot</button>
+    <button class="btn btn-ghost" onclick="openSettings()">⚙ Sozlama</button>
+    <button class="btn btn-red" onclick="stopAll()">⏹ Barchasini To'xtat</button>
+  </div>
+</header>
+
+<!-- QUICK SETTINGS -->
+<div class="qbar" id="settingsInline">
+  <div class="qbar-group">
+    <label>Narx (soatiga)</label>
+    <input type="number" id="rateInput" value="40000" onchange="updateRate()" min="1000" step="1000">
+    <span class="qbar-unit">UZS</span>
+  </div>
+  <div class="qbar-group">
+    <label>Stol soni</label>
+    <input type="number" id="tableCount" value="3" min="1" max="12" onchange="rebuildTables()">
+  </div>
+  <button class="btn btn-ghost" onclick="addTable()">+ Stol Qo'sh</button>
+</div>
+
+<!-- STATS BAR -->
+<div class="statsbar">
+  <div class="stat"><div class="stat-lbl">Faol Stollar</div><div class="stat-val" id="stat-active">0</div></div>
+  <div class="stat"><div class="stat-lbl">Bugungi Daromad</div><div class="stat-val" id="stat-today">0</div></div>
+  <div class="stat"><div class="stat-lbl">Jami Sessiyalar</div><div class="stat-val" id="stat-sessions">0</div></div>
+  <div class="stat"><div class="stat-lbl">O'rtacha Vaqt</div><div class="stat-val" id="stat-avg">—</div></div>
+</div>
+
+<div class="section-sep"></div>
+
+<!-- TABLES GRID -->
+<div class="grid" id="timers"></div>
+
+<!-- SETTINGS MODAL -->
+<div class="modal-overlay" id="settingsModal">
+  <div class="modal">
+    <h2>⚙ Sozlamalar</h2>
+    <label>Narx soatiga (UZS)</label>
+    <input type="number" id="mRate" value="40000">
+    <label>Stollar soni</label>
+    <input type="number" id="mCount" value="3" min="1" max="12">
+    <div style="margin-bottom:18px;border:1px solid var(--border2);border-radius:6px;padding:16px">
+      <label style="color:var(--gold);font-size:11px;letter-spacing:2px;display:block;margin-bottom:12px">🔑 Kirish Parolini O'zgartirish</label>
+      <label>Joriy Parol</label>
+      <input type="password" id="oldPassInput" placeholder="••••••" maxlength="8">
+      <label>Yangi Parol</label>
+      <input type="password" id="newPassInput" placeholder="••••••" maxlength="8">
+      <label>Yangi Parolni Tasdiqlang</label>
+      <input type="password" id="confirmPassInput" placeholder="••••••" maxlength="8">
+      <div id="passChangeError" style="color:var(--red);font-size:11px;margin-bottom:8px;display:none;letter-spacing:1px"></div>
+      <div id="passChangeOk" style="color:var(--green);font-size:11px;margin-bottom:8px;display:none;letter-spacing:1px"></div>
+      <button class="btn btn-amber" style="width:100%" onclick="changePassword()">🔒 Parolni Yangilash</button>
+    </div>
+    <div class="catalog-editor">
+      <label>Mahsulotlar ro'yxati</label>
+      <div id="catalogEditor"></div>
+      <button class="btn btn-amber" onclick="addCatalogItem()">+ Mahsulot Qo'sh</button>
+      <button class="btn btn-green" style="margin-top:10px;width:100%" onclick="saveCatalogChanges()">💾 Saqlash</button>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('settingsModal')">Bekor</button>
+      <button class="btn btn-gold" onclick="applySettings()">Saqlash</button>
+    </div>
+  </div>
+</div>
+
+<!-- EXPORT MODAL -->
+<div class="modal-overlay" id="exportModal">
+  <div class="modal" style="width:560px">
+    <h2>📊 Kun Hisoboti</h2>
+    <div class="export-list" id="exportContent"></div>
+    <div class="modal-footer" style="margin-top:16px">
+      <button class="btn btn-ghost" onclick="closeModal('exportModal')">Yopish</button>
+      <button class="btn btn-gold" onclick="copyReport()">📋 Nusxa</button>
+    </div>
+  </div>
+</div>
+
+<script>
+let RATE = parseFloat(localStorage.getItem('rate') || '40000');
+let tableCount = parseInt(localStorage.getItem('tcount') || '3');
+let ADMIN_CODE = localStorage.getItem('adminCode') || '838325';
+
+document.getElementById('rateInput').value = RATE;
+document.getElementById('tableCount').value = tableCount;
+document.getElementById('mRate').value = RATE;
+document.getElementById('mCount').value = tableCount;
+
+let timers = [];
+
+// Table limits stored per table id (minutes, 0 = no limit)
+let TABLE_LIMITS = JSON.parse(localStorage.getItem('table_limits') || '{}');
+
+function initTimers(){
+  const old = timers.map(t=>({running:t.running,start:t.start,sec:t.sec,history:t.history,name:t.name,extras:t.extras}));
+  timers = Array.from({length:tableCount},(_,i)=>({
+    id:i,
+    running: old[i]?.running||false,
+    start: old[i]?.start||0,
+    sec: old[i]?.sec||0,
+    history: old[i]?.history || JSON.parse(localStorage.getItem('hist_'+i)||'[]'),
+    name: old[i]?.name || 'STOL '+(i+1),
+    extras: old[i]?.extras || []
+  }));
+}
+
+function fmt(s){
+  const h=Math.floor(s/3600);
+  const m=Math.floor((s%3600)/60);
+  const sc=s%60;
+  if(h>0) return h+'h '+m.toString().padStart(2,'0')+'m';
+  return m.toString().padStart(2,'0')+':'+sc.toString().padStart(2,'0');
+}
+
+function fmtUZS(n){return n.toLocaleString('uz-UZ')+' UZS'}
+
+function getElapsed(t){
+  return t.running ? t.sec + Math.floor((Date.now()-t.start)/1000) : t.sec;
+}
+
+function getLimitSec(id){
+  const m = parseInt(TABLE_LIMITS[id]||0);
+  return isNaN(m)||m<=0 ? 0 : m*60;
+}
+
+function cardClass(t){
+  if(!t.running) return '';
+  const el = getElapsed(t);
+  const lim = getLimitSec(t.id);
+  if(lim>0 && el>=lim) return 'running overtime';
+  return 'running';
+}
+
+function statusText(t){
+  if(!t.running) return "Bo'sh";
+  const el = getElapsed(t);
+  const lim = getLimitSec(t.id);
+  if(lim>0 && el>=lim) return 'Muddati Tugadi!';
+  return 'Faol';
+}
+
+function progressPct(elapsed, id){
+  const lim = getLimitSec(id);
+  if(lim>0) return Math.min(100,(elapsed/lim)*100);
+  return Math.min(100,(elapsed/7200)*100);
+}
+
+function progressClass(elapsed, id){
+  const lim = getLimitSec(id);
+  if(lim>0){
+    const pct=(elapsed/lim)*100;
+    if(pct>=100) return 'over';
+    if(pct>=80) return 'warn';
+  }
+  return '';
+}
+
+// Countdown display for limited tables
+function countdownHTML(t, elapsed){
+  const lim = getLimitSec(t.id);
+  if(!lim || !t.running) return '';
+  const remaining = lim - elapsed;
+  if(remaining <= 0){
+    return `<div class="countdown-display">
+      <div class="countdown-lbl">Qoldi</div>
+      <div class="countdown-val over">TUGDI!</div>
+    </div>`;
+  }
+  const cls = remaining<=300?'warn':'';
+  return `<div class="countdown-display">
+    <div class="countdown-lbl">Qoldi</div>
+    <div class="countdown-val ${cls}">${fmt(remaining)}</div>
+  </div>`;
+}
+
+const BALLS = ['ball-1','ball-2','ball-3','ball-4','ball-5','ball-8'];
+function ballsDeco(id){
+  const b = BALLS[id % BALLS.length];
+  return `<div class="balls-deco">
+    <div class="ball ball-8">8</div>
+    <div class="ball ${b}"></div>
+    <div class="ball ball-1"></div>
+  </div>`;
+}
+
+const extrasOpen = new Set();
+
+function render(){
+  const root = document.getElementById('timers');
+  root.innerHTML = '';
+  timers.forEach(t=>{
+    const el = getElapsed(t);
+    const cls = cardClass(t);
+    const bilPrice = Math.round(el * RATE / 3600);
+    const extrasTotal = t.extras.reduce((s,e)=>s+e.price*e.qty,0);
+    const totalPrice = bilPrice + extrasTotal;
+    const pct = progressPct(el, t.id);
+    const pClass = progressClass(el, t.id);
+    const lim = getLimitSec(t.id);
+    const isOvertime = t.running && lim>0 && el>=lim;
+
+    const extrasListHTML = t.extras.length===0 ? '' : `
+      <div class="extras-list">
+        ${t.extras.map((e,ei)=>`
+          <div class="extra-item">
+            <span class="extra-name">${e.name}</span>
+            <div class="extra-qty">
+              <button class="qty-btn" onclick="changeQty(${t.id},${ei},-1)">−</button>
+              <span class="qty-num">${e.qty}</span>
+              <button class="qty-btn" onclick="changeQty(${t.id},${ei},1)">+</button>
+            </div>
+            <span class="extra-sum">${fmtUZS(e.price*e.qty)}</span>
+            <button class="extra-del" onclick="removeExtra(${t.id},${ei})">✕</button>
+          </div>`).join('')}
+      </div>`;
+
+    const productsHTML = CATALOG.map((p,pi)=>`
+      <button class="product-btn" onclick="addExtra(${t.id},${pi})">
+        <span class="product-name">${p.emoji} ${p.name}</span>
+        <span class="product-price">${(p.price/1000).toFixed(0)}k</span>
+      </button>`).join('');
+
+    const limitVal = TABLE_LIMITS[t.id] || '';
+    const limitBadge = limitVal ? `<span class="limit-active-badge">⏱ ${limitVal} min</span>` : '';
+
+    const div = document.createElement('div');
+    div.className = 'card'+(cls?' '+cls:'');
+    div.innerHTML = `
+      <div class="pulse"></div>
+      <div class="card-head">
+        <span class="table-name" onclick="renameTable(${t.id})" title="Ismni o'zgartirish">${t.name}</span>
+        <span class="status-pill">${statusText(t)}</span>
+      </div>
+      ${isOvertime?`<div class="overtime-alert show">⚠ Vaqt Tugadi — To'xtatish Kerak!</div>`:''}
+      <div class="time-area">
+        <div class="time-block">
+          <div class="time-num">${fmt(el)}</div>
+          <div class="time-meta">${t.running?'Hisoblashmoqda...':'To\'xtatildi'}</div>
+        </div>
+        ${countdownHTML(t, el)}
+      </div>
+      <div class="prog-wrap">
+        <div class="prog-fill ${pClass}" style="width:${pct}%"></div>
+      </div>
+      <div class="price-row">
+        <div class="price-detail">
+          Bilyard<br><span>${fmtUZS(bilPrice)}</span>
+          ${extrasTotal>0?`<br>Qo'shimcha<br><span style="color:var(--gold3)">${fmtUZS(extrasTotal)}</span>`:''}
+        </div>
+        <div>
+          <div class="price-total-lbl">JAMI</div>
+          <div class="price-total">${fmtUZS(totalPrice)}</div>
+        </div>
+      </div>
+      <div class="limit-row">
+        <label>⏱ Vaqt Chegarasi</label>
+        <input class="limit-input" type="number" min="0" max="999" placeholder="—"
+          value="${limitVal}"
+          onchange="setLimit(${t.id}, this.value)"
+          title="Daqiqada. 0 yoki bo'sh = cheklovsiz">
+        <span class="limit-unit">min</span>
+        ${limitBadge}
+      </div>
+      <div class="controls">
+        <button class="btn-start${t.running?' active':''}" onclick="toggle(${t.id})">
+          ${t.running?'⏹  STOP':'▶  START'}
+        </button>
+        <button class="btn-icon" onclick="resetTimer(${t.id})" title="Reset">↺</button>
+        <button class="btn-icon" onclick="removeTable(${t.id})" title="O'chirish" style="color:var(--red);border-color:rgba(255,61,61,0.25)">✕</button>
+      </div>
+
+      <div class="extras-section">
+        <div class="extras-head" onclick="toggleExtras(${t.id})">
+          <span class="extras-title">🛒 Qo'shimchalar (${t.extras.length}) <span style="font-size:8px;opacity:0.4">▼</span></span>
+          ${extrasTotal>0?`<span class="extras-total">${fmtUZS(extrasTotal)}</span>`:''}
+        </div>
+        <div class="extras-body" id="extras-${t.id}">
+          <div class="product-grid">${productsHTML}</div>
+          <div class="custom-extra">
+            <input class="name-in" type="text" id="cname-${t.id}" placeholder="Boshqa mahsulot...">
+            <input class="price-in" type="number" id="cprice-${t.id}" placeholder="Narx">
+            <button class="btn-add-custom" onclick="addCustomExtra(${t.id})">+ Qo'sh</button>
+          </div>
+          ${extrasListHTML}
+        </div>
+      </div>
+
+      <div class="history-section">
+        <div class="history-head">
+          <span class="history-title">Tarix (${t.history.length})</span>
+          ${t.history.length?`<button class="btn-clear-hist" onclick="clearHistory(${t.id})">Tozalash</button>`:''}
+        </div>
+        ${t.history.length===0?`<div class="no-hist">Sessiya yo'q</div>`:
+        `<table class="hist-table">
+          <thead><tr><th>Vaqt</th><th>Summa</th><th>Sana</th></tr></thead>
+          <tbody>${t.history.slice(0,4).map(h=>`
+            <tr>
+              <td>${h.time}</td>
+              <td class="sum" title="${h.extras||''}">${h.sum}${h.extras?'<span style="color:var(--gold3);font-size:9px"> +</span>':''}</td>
+              <td>${h.date}</td>
+            </tr>`).join('')}
+          </tbody>
+        </table>`}
+        ${t.history.length>4?`<div class="no-hist" style="margin-top:3px">...va yana ${t.history.length-4} ta</div>`:''}
+      </div>`;
+
+    root.appendChild(div);
+    if(extrasOpen.has(t.id)){
+      const eb = div.querySelector(`#extras-${t.id}`);
+      if(eb) eb.classList.add('open');
+    }
+  });
+
+  const addBtn = document.createElement('button');
+  addBtn.className='add-card';
+  addBtn.onclick=addTable;
+  addBtn.innerHTML='<span>＋</span><p>Stol Qo\'sh</p>';
+  root.appendChild(addBtn);
+
+  updateStats();
+}
+
+function setLimit(id, val){
+  const m = parseInt(val);
+  if(isNaN(m)||m<=0) delete TABLE_LIMITS[id];
+  else TABLE_LIMITS[id] = m;
+  localStorage.setItem('table_limits', JSON.stringify(TABLE_LIMITS));
+}
+
+function toggle(id){
+  const t = timers[id];
+  if(t.running){
+    t.sec += Math.floor((Date.now()-t.start)/1000);
+    t.running = false;
+    const bilPrice = Math.round(t.sec*RATE/3600);
+    const extrasTotal = t.extras.reduce((s,e)=>s+e.price*e.qty,0);
+    const extrasDesc = t.extras.length ? ' | '+t.extras.map(e=>`${e.name}×${e.qty}`).join(', ') : '';
+    t.history.unshift({
+      time: fmt(t.sec),
+      sum: fmtUZS(bilPrice + extrasTotal),
+      date: new Date().toLocaleString('uz-UZ'),
+      extras: extrasDesc
+    });
+    localStorage.setItem('hist_'+id, JSON.stringify(t.history));
+    t.sec = 0; t.extras = [];
+  } else {
+    t.start = Date.now(); t.running = true;
+  }
+  render();
+}
+
+function resetTimer(id){
+  if(!confirm('Bu stolni noldan boshlaysizmi?')) return;
+  const t = timers[id];
+  if(t.running){
+    t.sec += Math.floor((Date.now()-t.start)/1000);
+    t.history.unshift({time:fmt(t.sec),sum:fmtUZS(Math.round(t.sec*RATE/3600)),date:new Date().toLocaleString('uz-UZ')+' (Reset)'});
+    localStorage.setItem('hist_'+id, JSON.stringify(t.history));
+  }
+  t.running=false;t.start=0;t.sec=0;
+  render();
+}
+
+function clearHistory(id){
+  if(!confirm('Tarixi o\'chirilsin?')) return;
+  timers[id].history=[];
+  localStorage.removeItem('hist_'+id);
+  render();
+}
+
+function stopAll(){
+  if(!confirm('Barcha stollarni to\'xtatilsinmi?')) return;
+  timers.forEach(t=>{ if(t.running) toggle(t.id); });
+}
+
+function updateStats(){
+  document.getElementById('stat-active').textContent = timers.filter(t=>t.running).length;
+  const today = timers.reduce((s,t)=>s+t.history.reduce((a,h)=>{const v=parseInt(h.sum.replace(/\D/g,''));return a+(isNaN(v)?0:v);},0),0);
+  document.getElementById('stat-today').textContent = today>0?(today/1000).toFixed(0)+'k':0;
+  const sessions = timers.reduce((s,t)=>s+t.history.length,0);
+  document.getElementById('stat-sessions').textContent = sessions;
+  const allTimes = timers.flatMap(t=>t.history).map(h=>{const[m,s2]=h.time.split(':').map(Number);return isNaN(m)||isNaN(s2)?0:m*60+s2;}).filter(v=>v>0);
+  if(allTimes.length){
+    const avg=Math.round(allTimes.reduce((a,b)=>a+b,0)/allTimes.length);
+    document.getElementById('stat-avg').textContent=fmt(avg);
+  } else {
+    document.getElementById('stat-avg').textContent='—';
+  }
+}
+
+function addTable(){
+  timers.push({id:timers.length,running:false,start:0,sec:0,history:[],name:'STOL '+(timers.length+1),extras:[]});
+  tableCount=timers.length;
+  localStorage.setItem('tcount',tableCount);
+  document.getElementById('tableCount').value=tableCount;
+  render();
+}
+
+function removeTable(id){
+  if(timers.length<=1){alert('Kamida 1 ta stol bo\'lishi kerak');return}
+  if(!confirm(timers[id].name+' o\'chirilsinmi?')) return;
+  timers.splice(id,1);
+  timers.forEach((t,i)=>t.id=i);
+  tableCount=timers.length;
+  localStorage.setItem('tcount',tableCount);
+  render();
+}
+
+function renameTable(id){
+  const n=prompt('Yangi nom:',timers[id].name);
+  if(n&&n.trim()){timers[id].name=n.trim().toUpperCase();render();}
+}
+
+function rebuildTables(){
+  const n=parseInt(document.getElementById('tableCount').value);
+  if(n<1||n>12)return;
+  tableCount=n;localStorage.setItem('tcount',n);
+  while(timers.length<n)timers.push({id:timers.length,running:false,start:0,sec:0,history:[],name:'STOL '+(timers.length+1),extras:[]});
+  while(timers.length>n)timers.pop();
+  timers.forEach((t,i)=>t.id=i);
+  render();
+}
+
+function updateRate(){
+  RATE=parseFloat(document.getElementById('rateInput').value)||40000;
+  localStorage.setItem('rate',RATE);
+}
+
+function openSettings(){
+  document.getElementById('mRate').value=RATE;
+  document.getElementById('mCount').value=tableCount;
+  renderCatalogEditor();
+  document.getElementById('settingsModal').classList.add('open');
+}
+
+function applySettings(){
+  RATE=parseFloat(document.getElementById('mRate').value)||40000;
+  const nc=parseInt(document.getElementById('mCount').value)||3;
+  localStorage.setItem('rate',RATE);
+  document.getElementById('rateInput').value=RATE;
+  document.getElementById('tableCount').value=nc;
+  tableCount=nc;rebuildTables();
+  closeModal('settingsModal');
+}
+
+function openExport(){
+  const lines=['=== ASHURALI BILLIARD HISOBOT ===',new Date().toLocaleString('uz-UZ'),''];
+  let totalRev=0,totalSess=0;
+  timers.forEach(t=>{
+    lines.push(`--- ${t.name} ---`);
+    if(t.history.length===0){lines.push('  Sessiya yo\'q');return;}
+    t.history.forEach(h=>{lines.push(`  ${h.date}  |  ${h.time}  |  ${h.sum}`);const v=parseInt(h.sum.replace(/\D/g,''));if(!isNaN(v))totalRev+=v;});
+    totalSess+=t.history.length;lines.push('');
+  });
+  lines.push('----------------------------');
+  lines.push(`Jami sessiyalar: ${totalSess}`);
+  lines.push(`Jami daromad: ${fmtUZS(totalRev)}`);
+  document.getElementById('exportContent').innerHTML=lines.map(l=>`<div>${l.replace(/ /g,'&nbsp;')}</div>`).join('');
+  document.getElementById('exportModal').classList.add('open');
+}
+
+function copyReport(){
+  const txt=document.getElementById('exportContent').innerText;
+  navigator.clipboard.writeText(txt).then(()=>alert('Nusxa olindi!')).catch(()=>{});
+}
+
+function closeModal(id){document.getElementById(id).classList.remove('open')}
+
+document.querySelectorAll('.modal-overlay').forEach(m=>{
+  m.addEventListener('click',e=>{if(e.target===m)m.classList.remove('open')});
+});
+
+let CATALOG = JSON.parse(localStorage.getItem('catalog')||'null') || [
+  {emoji:'🚬',name:'Kent 6',price:22000},
+  {emoji:'🚬',name:'Pall Mall Mix',price:20000},
+  {emoji:'🚬',name:'Winston',price:19000},
+  {emoji:'🚬',name:'Parliament',price:25000},
+  {emoji:'🥤',name:'Fanta 1.5L',price:15000},
+  {emoji:'🥤',name:'Pepsi 1.5L',price:15000},
+  {emoji:'🥤',name:'Coca-Cola 1.5L',price:15000},
+  {emoji:'🥤',name:'Sprite 1.5L',price:15000},
+  {emoji:'🧃',name:'Suv 0.5L',price:5000},
+  {emoji:'🧃',name:'Lipton choy',price:8000},
+  {emoji:'🍺',name:'Pivo (0.5)',price:18000},
+  {emoji:'🍫',name:'Shokolad',price:12000},
+];
+
+function toggleExtras(id){
+  if(extrasOpen.has(id))extrasOpen.delete(id);
+  else extrasOpen.add(id);
+  const eb=document.getElementById('extras-'+id);
+  if(eb)eb.classList.toggle('open');
+}
+
+function addExtra(tableId,catalogIdx){
+  const t=timers[tableId];const p=CATALOG[catalogIdx];
+  const existing=t.extras.find(e=>e.name===p.name);
+  if(existing)existing.qty++;
+  else t.extras.push({name:p.name,price:p.price,qty:1});
+  extrasOpen.add(tableId);render();
+}
+
+function addCustomExtra(tableId){
+  const nameEl=document.getElementById('cname-'+tableId);
+  const priceEl=document.getElementById('cprice-'+tableId);
+  const name=nameEl?.value.trim();
+  const price=parseInt(priceEl?.value);
+  if(!name||!price||price<=0)return;
+  timers[tableId].extras.push({name,price,qty:1});
+  extrasOpen.add(tableId);render();
+}
+
+function changeQty(tableId,extraIdx,delta){
+  const e=timers[tableId].extras[extraIdx];
+  e.qty=Math.max(1,e.qty+delta);
+  extrasOpen.add(tableId);render();
+}
+
+function removeExtra(tableId,extraIdx){
+  timers[tableId].extras.splice(extraIdx,1);
+  extrasOpen.add(tableId);render();
+}
+
+function changePassword(){
+  const oldPass=document.getElementById('oldPassInput').value;
+  const newPass=document.getElementById('newPassInput').value;
+  const confirmPass=document.getElementById('confirmPassInput').value;
+  const errEl=document.getElementById('passChangeError');
+  const okEl=document.getElementById('passChangeOk');
+  errEl.style.display='none';okEl.style.display='none';
+  if(oldPass!==ADMIN_CODE){errEl.textContent='⚠ Joriy parol noto\'g\'ri';errEl.style.display='block';return;}
+  if(newPass.length<4){errEl.textContent='⚠ Yangi parol kamida 4 ta belgi bo\'lishi kerak';errEl.style.display='block';return;}
+  if(newPass!==confirmPass){errEl.textContent='⚠ Parollar mos kelmadi';errEl.style.display='block';return;}
+  ADMIN_CODE=newPass;localStorage.setItem('adminCode',ADMIN_CODE);
+  okEl.textContent='✓ Parol muvaffaqiyatli o\'zgartirildi!';okEl.style.display='block';
+  document.getElementById('oldPassInput').value='';
+  document.getElementById('newPassInput').value='';
+  document.getElementById('confirmPassInput').value='';
+}
+
+function renderCatalogEditor(){
+  const root=document.getElementById('catalogEditor');
+  if(!root)return;root.innerHTML='';
+  CATALOG.forEach((item,index)=>{
+    const row=document.createElement('div');row.className='catalog-item';
+    row.innerHTML=`<input class="emoji" type="text" placeholder="Emoji"><input class="name" type="text" placeholder="Nomi"><input class="price" type="number" placeholder="Narx"><button class="btn btn-red">✕</button>`;
+    row.querySelector('.emoji').value=item.emoji||'';
+    row.querySelector('.name').value=item.name||'';
+    row.querySelector('.price').value=item.price||'';
+    row.querySelector('.emoji').addEventListener('input',e=>{CATALOG[index].emoji=e.target.value});
+    row.querySelector('.name').addEventListener('input',e=>{CATALOG[index].name=e.target.value});
+    row.querySelector('.price').addEventListener('input',e=>{CATALOG[index].price=parseInt(e.target.value)||0});
+    row.querySelector('.btn-red').addEventListener('click',()=>{deleteCatalogItem(index)});
+    root.appendChild(row);
+  });
+}
+
+function addCatalogItem(){CATALOG.push({emoji:'🛒',name:'',price:0});renderCatalogEditor()}
+
+function deleteCatalogItem(index){
+  if(!confirm('Mahsulot o\'chirilsinmi?'))return;
+  CATALOG.splice(index,1);localStorage.setItem('catalog',JSON.stringify(CATALOG));
+  renderCatalogEditor();render();
+}
+
+function saveCatalogChanges(){
+  const items=document.querySelectorAll('.catalog-item');const newCatalog=[];
+  items.forEach(item=>{
+    const emoji=item.querySelector('.emoji').value.trim()||'🛒';
+    const name=item.querySelector('.name').value.trim();
+    const price=parseInt(item.querySelector('.price').value)||0;
+    if(name&&price>0)newCatalog.push({emoji,name,price});
+  });
+  CATALOG=newCatalog;localStorage.setItem('catalog',JSON.stringify(CATALOG));
+  alert('Mahsulotlar saqlandi!');render();renderCatalogEditor();
+}
+
+function checkAdminCode(){
+  const val=document.getElementById('adminCodeInput').value;
+  if(val===ADMIN_CODE){document.getElementById('adminLock').style.display='none';}
+  else{document.getElementById('adminError').style.display='block';document.getElementById('adminCodeInput').value='';}
+}
+
+document.getElementById('adminCodeInput').addEventListener('keydown',e=>{if(e.key==='Enter')checkAdminCode()});
+
+renderCatalogEditor();
+initTimers();
+render();
+setInterval(render,1000);
+</script>
+</body>
+</html>
